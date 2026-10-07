@@ -17,7 +17,7 @@ export default function InvoicePreview({ document }: InvoicePreviewProps) {
     : discount.value;
 
   return (
-    <div className="bg-white shadow-lg border border-zinc-200 mx-auto" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
+    <div className="invoice-sheet bg-white shadow-lg border border-zinc-200 mx-auto print:shadow-none print:border-0" style={{ width: '210mm', minHeight: '297mm', padding: '15mm' }}>
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-2xl font-bold text-black tracking-tight">{business.name || 'Nama Usaha'}</h1>
@@ -131,18 +131,7 @@ export default function InvoicePreview({ document }: InvoicePreviewProps) {
         </div>
       )}
 
-      <div className="mt-16 pt-4 border-t border-zinc-200">
-        <div className="flex justify-between items-end">
-          <div className="text-xs text-zinc-500">
-            <p>{formatDateIndonesia(date)}</p>
-          </div>
-          <div className="text-center">
-            <div className="w-40 border-b border-zinc-400 mb-1" />
-            <p className="text-xs font-semibold text-black">{business.name}</p>
-          </div>
-        </div>
-        <p className="text-center text-[10px] text-zinc-400 mt-8">Terima kasih atas kepercayaan Anda</p>
-      </div>
+      <p className="text-center text-[10px] text-zinc-400 mt-16 pt-4 border-t border-zinc-200">Terima kasih atas kepercayaan Anda</p>
     </div>
   );
 }

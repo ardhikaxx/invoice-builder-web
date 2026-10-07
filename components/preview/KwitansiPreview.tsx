@@ -14,7 +14,7 @@ export default function KwitansiPreview({ document }: KwitansiPreviewProps) {
   const displayAmount = pelunasanAmount || payment.paidAmount || totalAmount;
 
   return (
-    <div className="bg-white shadow-lg border border-zinc-200 mx-auto" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
+    <div className="invoice-sheet bg-white shadow-lg border border-zinc-200 mx-auto print:shadow-none print:border-0" style={{ width: '210mm', minHeight: '297mm', padding: '15mm' }}>
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-2xl font-bold text-black tracking-tight">{business.name || 'Nama Usaha'}</h1>

@@ -13,7 +13,7 @@ import PaymentForm from '@/components/forms/PaymentForm';
 import InvoicePreview from '@/components/preview/InvoicePreview';
 import KwitansiPreview from '@/components/preview/KwitansiPreview';
 import Button from '@/components/ui/Button';
-import { Save, Printer, ArrowLeft, RotateCcw, StickyNote } from 'lucide-react';
+import { Save, Printer, ArrowLeft, RotateCcw, StickyNote, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface BuilderProps {
   currentDocument: Document;
@@ -57,6 +57,7 @@ export default function Builder({
   showToast,
 }: BuilderProps) {
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const handleSave = () => {
@@ -260,15 +261,40 @@ export default function Builder({
             )}
           </div>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" id="print-area">
             <div className="sticky top-4">
-              <div className="bg-zinc-200 rounded-xl p-4 overflow-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
-                <div ref={previewRef} className="transform-origin-top" style={{ transform: 'scale(0.55)', transformOrigin: 'top center' }}>
-                  {currentDocument.type === 'invoice' ? (
-                    <InvoicePreview document={currentDocument} />
-                  ) : (
-                    <KwitansiPreview document={currentDocument} />
-                  )}
+              <div className="bg-zinc-200 rounded-xl p-4 overflow-auto preview-container" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+                <div className="flex items-center justify-center gap-2 mb-3 no-print">
+                  <button
+                    onClick={() => setZoom((z) => Math.max(0.5, Math.round((z - 0.1) * 10) / 10))}
+                    className="p-1.5 bg-white border border-zinc-300 rounded-lg text-zinc-600 hover:text-black hover:border-zinc-400 transition-colors"
+                    title="Perkecil"
+                  >
+                    <ZoomOut className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setZoom(1)}
+                    className="px-2.5 py-1 bg-white border border-zinc-300 rounded-lg text-xs font-medium text-zinc-700 hover:text-black min-w-[52px]"
+                    title="Reset ke 100%"
+                  >
+                    {Math.round(zoom * 100)}%
+                  </button>
+                  <button
+                    onClick={() => setZoom((z) => Math.min(1.5, Math.round((z + 0.1) * 10) / 10))}
+                    className="p-1.5 bg-white border border-zinc-300 rounded-lg text-zinc-600 hover:text-black hover:border-zinc-400 transition-colors"
+                    title="Perbesar"
+                  >
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex justify-center preview-scale-wrapper">
+                  <div ref={previewRef} className="preview-zoom-wrapper" style={{ zoom } as React.CSSProperties}>
+                    {currentDocument.type === 'invoice' ? (
+                      <InvoicePreview document={currentDocument} />
+                    ) : (
+                      <KwitansiPreview document={currentDocument} />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
