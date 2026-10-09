@@ -1,20 +1,18 @@
 'use client';
 import React from 'react';
-import { DocumentType } from '@/lib/types';
 import { FileText } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { RefreshCw } from 'lucide-react';
 import { getNextDocumentNumber } from '@/lib/storage';
 
 interface DocumentInfoFormProps {
-  type: DocumentType;
   documentNumber: string;
   date: string;
   onChange: (info: { documentNumber?: string; date?: string }) => void;
   errors: Record<string, string>;
 }
 
-export default function DocumentInfoForm({ type, documentNumber, date, onChange, errors }: DocumentInfoFormProps) {
+export default function DocumentInfoForm({ documentNumber, date, onChange, errors }: DocumentInfoFormProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
@@ -24,13 +22,13 @@ export default function DocumentInfoForm({ type, documentNumber, date, onChange,
 
       <div className="grid grid-cols-1 gap-4">
         <div className="min-w-0">
-          <label className="block text-xs font-medium text-zinc-600 mb-1">Nomor {type === 'invoice' ? 'Invoice' : 'Kwitansi'} *</label>
+          <label className="block text-xs font-medium text-zinc-600 mb-1">Nomor Invoice *</label>
           <div className="flex gap-2">
             <input
               type="text"
               value={documentNumber}
               onChange={(e) => onChange({ documentNumber: e.target.value })}
-              placeholder={type === 'invoice' ? 'INV-20260918-001' : 'KWT-20260918-001'}
+              placeholder="INV-20260918-001"
               className={`min-w-0 flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 transition-colors ${
                 errors['documentNumber'] ? 'border-red-400' : 'border-zinc-300'
               }`}
@@ -38,7 +36,7 @@ export default function DocumentInfoForm({ type, documentNumber, date, onChange,
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => onChange({ documentNumber: getNextDocumentNumber(type) })}
+              onClick={() => onChange({ documentNumber: getNextDocumentNumber() })}
               icon={<RefreshCw className="w-3.5 h-3.5" />}
               className="shrink-0 whitespace-nowrap self-center"
             >

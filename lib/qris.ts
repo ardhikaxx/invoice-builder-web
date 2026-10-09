@@ -95,14 +95,10 @@ export function makeDynamicQris(base: string, amount: number): string | null {
 
 /**
  * Nominal yang ditanam ke QR:
- * - invoice full → total tagihan
- * - invoice DP → nominal DP yang sedang dibayar
- * - kwitansi → nominal pada kwitansi
+ * - pembayaran full → total tagihan
+ * - pembayaran DP → nominal DP yang sedang dibayar
  */
 export function resolveQrisAmount(doc: Document): number {
-  if (doc.type === 'kwitansi') {
-    return Math.round(doc.pelunasanAmount || doc.payment.paidAmount || doc.totalAmount || 0);
-  }
   const amt = doc.payment.method === 'full' ? doc.totalAmount : doc.payment.dpAmount;
   return Math.round(amt || 0);
 }

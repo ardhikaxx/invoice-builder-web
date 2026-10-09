@@ -87,19 +87,6 @@ export function calculatePayment(
   };
 }
 
-export function calculatePelunasan(
-  totalAmount: number,
-  dpAmount: number,
-  pelunasanAmount: number
-): { pelunasan: number; totalPaid: number; status: PaymentStatus } {
-  const remaining = Math.max(0, totalAmount - dpAmount);
-  const pelunasan = Math.min(Math.max(0, pelunasanAmount), remaining);
-  const totalPaid = dpAmount + pelunasan;
-  const status: PaymentStatus = totalPaid >= totalAmount ? 'pelunasan' : 'lunas_dp';
-
-  return { pelunasan, totalPaid, status };
-}
-
 export function validateDocumentNumber(
   documentNumber: string,
   existingNumbers: string[]

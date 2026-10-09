@@ -1,10 +1,10 @@
 'use client';
 import React, { useState, useMemo } from 'react';
-import { Document, DocumentType, PaymentStatus } from '@/lib/types';
-import { formatRupiah, formatDateShort, getDocumentTypeLabel } from '@/lib/utils';
+import { Document, PaymentStatus } from '@/lib/types';
+import { formatRupiah, formatDateShort } from '@/lib/utils';
 import DocumentStatusBadge from '@/components/ui/DocumentStatusBadge';
 import { ConfirmationModal } from '@/components/ui/Modal';
-import { History, Search, Copy, Edit3, Trash2, FileText } from 'lucide-react';
+import { History, Search, Copy, Edit3, Trash2 } from 'lucide-react';
 
 interface DocumentHistoryProps {
   documents: Document[];
@@ -15,7 +15,6 @@ interface DocumentHistoryProps {
 
 export default function DocumentHistory({ documents, onLoad, onDuplicate, onDelete }: DocumentHistoryProps) {
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState<DocumentType | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'all'>('all');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
@@ -24,11 +23,10 @@ export default function DocumentHistory({ documents, onLoad, onDuplicate, onDele
       const matchSearch = !search ||
         doc.documentNumber.toLowerCase().includes(search.toLowerCase()) ||
         doc.customer.name.toLowerCase().includes(search.toLowerCase());
-      const matchType = filterType === 'all' || doc.type === filterType;
       const matchStatus = filterStatus === 'all' || doc.payment.status === filterStatus;
-      return matchSearch && matchType && matchStatus;
+      return matchSearch && matchStatus;
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [documents, search, filterType, filterStatus]);
+  }, [documents, search, filterStatus]);
 
   if (documents.length === 0) return null;
 
@@ -51,15 +49,6 @@ export default function DocumentHistory({ documents, onLoad, onDuplicate, onDele
           />
         </div>
         <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value as DocumentType | 'all')}
-          className="px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white"
-        >
-          <option value="all">Semua Jenis</option>
-          <option value="invoice">Invoice</option>
-          <option value="kwitansi">Kwitansi</option>
-        </select>
-        <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as PaymentStatus | 'all')}
           className="px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white"
@@ -73,7 +62,7 @@ export default function DocumentHistory({ documents, onLoad, onDuplicate, onDele
 
       {filtered.length === 0 ? (
         <div className="text-center py-8 text-sm text-zinc-500">
-          {search || filterType !== 'all' || filterStatus !== 'all'
+          {search || filterStatus !== 'all'
             ? 'Tidak ada dokumen yang sesuai dengan filter.'
             : 'Belum ada dokumen yang tersimpan.'}
         </div>
@@ -86,7 +75,6 @@ export default function DocumentHistory({ documents, onLoad, onDuplicate, onDele
                   <th className="text-left px-4 py-3 font-semibold text-zinc-600">Nomor</th>
                   <th className="text-left px-4 py-3 font-semibold text-zinc-600">Tanggal</th>
                   <th className="text-left px-4 py-3 font-semibold text-zinc-600">Pelanggan</th>
-                  <th className="text-left px-4 py-3 font-semibold text-zinc-600">Jenis</th>
                   <th className="text-right px-4 py-3 font-semibold text-zinc-600">Total</th>
                   <th className="text-left px-4 py-3 font-semibold text-zinc-600">Status</th>
                   <th className="text-right px-4 py-3 font-semibold text-zinc-600">Aksi</th>
@@ -98,12 +86,6 @@ export default function DocumentHistory({ documents, onLoad, onDuplicate, onDele
                     <td className="px-4 py-3 font-medium text-black">{doc.documentNumber}</td>
                     <td className="px-4 py-3 text-zinc-600">{formatDateShort(doc.date)}</td>
                     <td className="px-4 py-3 text-zinc-700">{doc.customer.name}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1 text-zinc-600">
-                        <FileText className="w-3 h-3" />
-                        {getDocumentTypeLabel(doc.type)}
-                      </span>
-                    </td>
                     <td className="px-4 py-3 text-right font-medium text-black">{formatRupiah(doc.totalAmount)}</td>
                     <td className="px-4 py-3"><DocumentStatusBadge status={doc.payment.status} /></td>
                     <td className="px-4 py-3">

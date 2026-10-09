@@ -1,15 +1,15 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { Document, Business, ServiceItem, AdditionalCost, Discount, Payment, DocumentType, AppState } from '@/lib/types';
+import { Document, Business, ServiceItem, AdditionalCost, Discount, Payment, AppState } from '@/lib/types';
 import { generateId, getTodayDate } from '@/lib/utils';
 import { calculateItemTotal, calculateSubtotal, calculateAdditionalCostsTotal, calculateDiscountAmount, calculateTotalAmount, calculatePayment } from '@/lib/calculations';
 import { loadState, saveState, saveDocument as saveDocumentToStorage, deleteDocument as deleteDocumentFromStorage, incrementDocumentNumber, getNextDocumentNumber, getDefaultState } from '@/lib/storage';
 
-function createEmptyDocument(type: DocumentType): Document {
+function createEmptyDocument(): Document {
   return {
     id: generateId(),
-    type,
-    documentNumber: getNextDocumentNumber(type),
+    type: 'invoice',
+    documentNumber: getNextDocumentNumber(),
     date: getTodayDate(),
     business: loadState().business,
     customer: { name: '', phone: '' },
@@ -62,8 +62,8 @@ export function useDocumentState() {
     saveState(state);
   }, [state, isLoaded]);
 
-  const startNewDocument = useCallback((type: DocumentType) => {
-    const doc = createEmptyDocument(type);
+  const startNewDocument = useCallback(() => {
+    const doc = createEmptyDocument();
     setCurrentDocument(doc);
     setErrors({});
   }, []);
@@ -77,7 +77,7 @@ export function useDocumentState() {
     const newDoc: Document = {
       ...doc,
       id: generateId(),
-      documentNumber: getNextDocumentNumber(doc.type),
+      documentNumber: getNextDocumentNumber(),
       date: getTodayDate(),
       payment: {
         method: 'full',
@@ -119,13 +119,6 @@ export function useDocumentState() {
     setCurrentDocument(prev => {
       if (!prev) return null;
       return { ...prev, ...info, updatedAt: new Date().toISOString() };
-    });
-  }, []);
-
-  const updatePelunasanAmount = useCallback((amount: number) => {
-    setCurrentDocument(prev => {
-      if (!prev) return null;
-      return { ...prev, pelunasanAmount: amount };
     });
   }, []);
 
@@ -301,7 +294,7 @@ export function useDocumentState() {
 
     const newState = saveDocumentToStorage(doc);
     setState(newState);
-    incrementDocumentNumber(doc.type);
+    incrementDocumentNumber();
     setCurrentDocument(doc);
 
     return { success: true, message: 'Dokumen berhasil disimpan' };
@@ -338,7 +331,6 @@ export function useDocumentState() {
     updateDiscount,
     updatePayment,
     updateNotes,
-    updatePelunasanAmount,
     saveCurrentDocument,
     deleteDocument,
     resetForm,

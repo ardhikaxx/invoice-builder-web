@@ -55,14 +55,13 @@ export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
 }
 
-export function generateDocumentNumber(type: 'invoice' | 'kwitansi', sequence: number): string {
+export function generateDocumentNumber(sequence: number): string {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  const prefix = type === 'invoice' ? 'INV' : 'KWT';
   const num = String(sequence).padStart(3, '0');
-  return `${prefix}-${year}${month}${day}-${num}`;
+  return `INV-${year}${month}${day}-${num}`;
 }
 
 export function getPaymentStatusLabel(status: string): string {
@@ -71,13 +70,5 @@ export function getPaymentStatusLabel(status: string): string {
     case 'lunas_dp': return 'LUNAS PEMBAYARAN DP';
     case 'pelunasan': return 'PELUNASAN';
     default: return status.toUpperCase();
-  }
-}
-
-export function getDocumentTypeLabel(type: string): string {
-  switch (type) {
-    case 'invoice': return 'Invoice';
-    case 'kwitansi': return 'Kwitansi';
-    default: return type;
   }
 }

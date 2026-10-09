@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invoice & Kwitansi Builder",
-  description: "Buat invoice dan kwitansi profesional tanpa login. Data tersimpan lokal di perangkat Anda.",
+  title: "Invoice Builder",
+  description: "Buat invoice profesional tanpa login. Data tersimpan lokal di perangkat Anda.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

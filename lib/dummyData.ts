@@ -127,35 +127,3 @@ export const DUMMY_INVOICE_DP: Document = {
   createdAt: '2026-09-18T11:00:00.000Z',
   updatedAt: '2026-09-18T11:00:00.000Z',
 };
-
-export const DUMMY_KWITANSI: Document = {
-  id: generateId(),
-  type: 'kwitansi',
-  documentNumber: 'KWT-20260918-001',
-  date: '2026-09-18',
-  business: DUMMY_BUSINESS,
-  customer: {
-    name: 'Rina Susanti',
-    phone: '085678901234',
-  },
-  items: [],
-  additionalCosts: [],
-  discount: { type: 'nominal', value: 0 },
-  subtotal: 0,
-  totalAmount: 11147500,
-  payment: {
-    method: 'full',
-    dpType: 'nominal',
-    dpNominal: 0,
-    dpPercentage: 100,
-    dpAmount: 11147500,
-    remainingPayment: 0,
-    paidAmount: 11147500,
-    status: 'pelunasan',
-  },
-  notes: 'Pelunasan pembayaran Invoice INV-20260918-002',
-  createdAt: '2026-09-18T14:00:00.000Z',
-  updatedAt: '2026-09-18T14:00:00.000Z',
-  linkedInvoiceId: 'INV-20260918-002',
-  pelunasanAmount: 11147500,
-};

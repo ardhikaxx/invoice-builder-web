@@ -1,4 +1,4 @@
-import { jsPDF } from 'jspdf';
+﻿import { jsPDF } from 'jspdf';
 import type { Document } from './types';
 import { formatRupiah, formatDateIndonesia, getPaymentStatusLabel } from './utils';
 import { terbilang } from './terbilang';
@@ -39,11 +39,10 @@ export function sanitizeFileName(name: string): string {
   return cleaned.slice(0, 120);
 }
 
-/** Nama file PDF sesuai nomor invoice/kwitansi, mis. INV-20250101-001.pdf */
+/** Nama file PDF sesuai nomor invoice, mis. INV-20250101-001.pdf */
 export function getPdfFileName(doc: Document): string {
   const base = sanitizeFileName(doc.documentNumber);
-  const fallback = doc.type === 'invoice' ? 'invoice' : 'kwitansi';
-  return `${base || fallback}.pdf`;
+  return `${base || 'invoice'}.pdf`;
 }
 
 function ensureSpace(doc: jsPDF, y: number, needed: number): number {
@@ -96,7 +95,7 @@ function drawHeader(doc: jsPDF, businessName: string, businessLines: string[], t
 
 /**
  * Gambar kotak QRIS dengan nominal tertanam (QR dinamis). Saat QR di-scan,
- * aplikasi pembayaran langsung menampilkan nominal — tanpa ketik manual.
+ * aplikasi pembayaran langsung menampilkan nominal â€” tanpa ketik manual.
  * Mengembalikan posisi y setelah kotak. Bila QR tak bisa dibuat, y
  * dikembalikan apa adanya (kotak dilewati).
  */
@@ -402,7 +401,7 @@ async function buildInvoicePdf(docPdf: jsPDF, doc: Document) {
       y += chunk.length * 4;
       li += chunk.length;
       if (li < noteLines.length) {
-        // gambar kotak parsial lalu lanjut halaman baru — sederhanakan: tutup & buka kotak baru
+        // gambar kotak parsial lalu lanjut halaman baru â€” sederhanakan: tutup & buka kotak baru
         const h = y - noteStart;
         docPdf.setDrawColor(...C_BORDER);
         docPdf.setLineWidth(0.3);
@@ -432,160 +431,6 @@ async function buildInvoicePdf(docPdf: jsPDF, doc: Document) {
   drawFooterThanks(docPdf);
 }
 
-async function buildKwitansiPdf(docPdf: jsPDF, doc: Document) {
-  const { business, customer, payment, notes, documentNumber, date, totalAmount, linkedInvoiceId, pelunasanAmount } = doc;
-  const displayAmount = pelunasanAmount || payment.paidAmount || totalAmount;
-
-  const businessLines = [business.phone, business.email, business.address, business.website].filter(Boolean);
-  let y = drawHeader(docPdf, business.name, businessLines, 'KWITANSI');
-
-  const leftStartY = y;
-  docPdf.setFont('helvetica', 'bold');
-  docPdf.setFontSize(7);
-  docPdf.setTextColor(...C_LIGHT_GRAY);
-  docPdf.text('DITERIMA DARI', MARGIN, y);
-  y += 5;
-  docPdf.setFontSize(10);
-  docPdf.setTextColor(...C_BLACK);
-  const custLines = docPdf.splitTextToSize(customer.name || 'Nama Pelanggan', 85) as string[];
-  docPdf.text(custLines, MARGIN, y);
-  y += custLines.length * 5;
-  if (customer.phone) {
-    docPdf.setFont('helvetica', 'normal');
-    docPdf.setFontSize(8);
-    docPdf.setTextColor(...C_GRAY);
-    docPdf.text(customer.phone, MARGIN, y);
-    y += 4;
-  }
-  const leftEndY = y;
-
-  const metaRows: { label: string; value: string; bold?: boolean }[] = [
-    { label: 'Nomor', value: documentNumber, bold: true },
-    { label: 'Tanggal', value: formatDateIndonesia(date) },
-  ];
-  if (linkedInvoiceId) metaRows.push({ label: 'Ref. Invoice', value: linkedInvoiceId });
-  const rightY = drawMetaRight(docPdf, leftStartY + 5, metaRows);
-
-  y = Math.max(leftEndY, rightY) + 6;
-
-  // Kotak utama pembayaran
-  y = ensureSpace(docPdf, y, 45);
-  const boxStart = y;
-  docPdf.setFont('helvetica', 'normal');
-  docPdf.setFontSize(8);
-  docPdf.setTextColor(...C_GRAY);
-  docPdf.text('Telah diterima pembayaran dari:', MARGIN + 5, y + 7);
-  y += 13;
-  docPdf.setFont('helvetica', 'bold');
-  docPdf.setFontSize(12);
-  docPdf.setTextColor(...C_BLACK);
-  const payerLines = docPdf.splitTextToSize(customer.name || 'Nama Pelanggan', CONTENT_WIDTH - 10) as string[];
-  docPdf.text(payerLines, MARGIN + 5, y);
-  y += payerLines.length * 6 + 2;
-
-  docPdf.setFont('helvetica', 'normal');
-  docPdf.setFontSize(8);
-  docPdf.setTextColor(...C_GRAY);
-  docPdf.text('Jumlah Pembayaran', MARGIN + 5, y);
-  docPdf.setFont('helvetica', 'bold');
-  docPdf.setFontSize(13);
-  docPdf.setTextColor(...C_BLACK);
-  docPdf.text(formatRupiah(displayAmount), PAGE_WIDTH - MARGIN - 5, y, { align: 'right' });
-  y += 8;
-
-  docPdf.setDrawColor(...C_BORDER);
-  docPdf.setLineWidth(0.2);
-  docPdf.line(MARGIN + 5, y, PAGE_WIDTH - MARGIN - 5, y);
-  y += 5;
-  docPdf.setFont('helvetica', 'normal');
-  docPdf.setFontSize(7);
-  docPdf.setTextColor(...C_GRAY);
-  docPdf.text('TERBILANG', MARGIN + 5, y);
-  y += 4;
-  docPdf.setFont('helvetica', 'bold');
-  docPdf.setFontSize(8);
-  docPdf.setTextColor(...C_BLACK);
-  const tbLines = docPdf.splitTextToSize(terbilang(displayAmount), CONTENT_WIDTH - 10) as string[];
-  docPdf.text(tbLines, MARGIN + 5, y);
-  y += tbLines.length * 4 + 5;
-
-  const boxH = y - boxStart;
-  docPdf.setDrawColor(...C_BORDER);
-  docPdf.setLineWidth(0.3);
-  docPdf.roundedRect(MARGIN, boxStart, CONTENT_WIDTH, boxH, 2, 2);
-
-  // Keterangan
-  y += 5;
-  docPdf.setFont('helvetica', 'normal');
-  docPdf.setFontSize(8);
-  const keterangan = notes || `Pembayaran telah diterima dari ${customer.name || 'pelanggan'}`;
-  const ketLines = docPdf.splitTextToSize(`Keterangan: ${keterangan}`, CONTENT_WIDTH) as string[];
-  y = ensureSpace(docPdf, y, ketLines.length * 4 + 4);
-  docPdf.setTextColor(...C_DARK);
-  docPdf.text(ketLines, MARGIN, y);
-  y += ketLines.length * 4 + 2;
-  if (linkedInvoiceId) {
-    docPdf.text(`Referensi: Invoice ${linkedInvoiceId}`, MARGIN, y);
-    y += 5;
-  }
-
-  // Status
-  y = ensureSpace(docPdf, y, 12);
-  docPdf.setFillColor(...C_BG);
-  docPdf.roundedRect(MARGIN, y, CONTENT_WIDTH, 10, 2, 2, 'F');
-  docPdf.setFontSize(8);
-  docPdf.setTextColor(...C_GRAY);
-  docPdf.text('Status Pembayaran:', MARGIN + 4, y + 6.5);
-  docPdf.setFont('helvetica', 'bold');
-  docPdf.setTextColor(...C_BLACK);
-  docPdf.text(getPaymentStatusLabel(payment.status), MARGIN + 42, y + 6.5);
-  y += 16;
-
-  // QRIS dinamis: nominal kwitansi tertanam di QR
-  y = await drawQrisSection(docPdf, doc, y);
-  y += 4;
-
-  // Tanda tangan
-  y = ensureSpace(docPdf, y, 45);
-  // Tanggal di kiri
-  docPdf.setFont('helvetica', 'normal');
-  docPdf.setFontSize(8);
-  docPdf.setTextColor(...C_GRAY);
-  docPdf.text(formatDateIndonesia(date), MARGIN, y);
-  y += 10;
-
-  const sigW = 60;
-  const leftSigX = MARGIN;
-  const rightSigX = PAGE_WIDTH - MARGIN - sigW;
-
-  docPdf.setFontSize(7);
-  docPdf.setTextColor(...C_LIGHT_GRAY);
-  docPdf.text('Penerima', leftSigX + sigW / 2, y, { align: 'center' });
-  docPdf.text('Penerbit', rightSigX + sigW / 2, y, { align: 'center' });
-  y += 14;
-  docPdf.setDrawColor(...C_LIGHT_GRAY);
-  docPdf.setLineWidth(0.3);
-  docPdf.line(leftSigX, y, leftSigX + sigW, y);
-  docPdf.line(rightSigX, y, rightSigX + sigW, y);
-  y += 5;
-  docPdf.setFont('helvetica', 'bold');
-  docPdf.setFontSize(8);
-  docPdf.setTextColor(...C_BLACK);
-  docPdf.text((customer.name || 'Pelanggan').slice(0, 30), leftSigX + sigW / 2, y, { align: 'center' });
-  docPdf.text((business.name || '-').slice(0, 30), rightSigX + sigW / 2, y, { align: 'center' });
-  y += 6;
-
-  docPdf.setFont('helvetica', 'normal');
-  docPdf.setFontSize(7);
-  docPdf.setTextColor(...C_LIGHT_GRAY);
-  docPdf.text(
-    'Dokumen ini dicetak secara otomatis dari sistem',
-    PAGE_WIDTH / 2,
-    PAGE_HEIGHT - BOTTOM_MARGIN - 4,
-    { align: 'center' }
-  );
-}
-
 /**
  * Langsung mengunduh dokumen sebagai PDF.
  * Nama file mengikuti nomor dokumen (mis. INV-20250101-001.pdf).
@@ -594,16 +439,12 @@ async function buildKwitansiPdf(docPdf: jsPDF, doc: Document) {
 export async function downloadDocumentPdf(doc: Document): Promise<string> {
   const docPdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
   docPdf.setProperties({
-    title: `${doc.type === 'invoice' ? 'Invoice' : 'Kwitansi'} ${doc.documentNumber}`,
+    title: `Invoice ${doc.documentNumber}`,
     subject: doc.documentNumber,
-    creator: 'Invoice & Kwitansi Builder',
+    creator: 'Invoice Builder',
   });
 
-  if (doc.type === 'invoice') {
-    await buildInvoicePdf(docPdf, doc);
-  } else {
-    await buildKwitansiPdf(docPdf, doc);
-  }
+  await buildInvoicePdf(docPdf, doc);
 
   const fileName = getPdfFileName(doc);
   docPdf.save(fileName);

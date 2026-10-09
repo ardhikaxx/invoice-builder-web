@@ -13,7 +13,6 @@ const DEFAULT_BUSINESS: Business = {
 
 const DEFAULT_SETTINGS: AppSettings = {
   nextInvoiceNumber: 1,
-  nextKwitansiNumber: 1,
 };
 
 export const DEFAULT_STATE: AppState = {
@@ -84,7 +83,9 @@ export function loadState(): AppState {
       settings.businessSeeded = true;
     }
     let documents: Document[] = Array.isArray(parsed.documents) ? parsed.documents : [];
-    // Migrasi satu kali: semua invoice/kwitansi lama yang info usahanya masih
+    // Hanya invoice yang didukung. Dokumen kwitansi lama tidak dimuat lagi.
+    documents = documents.filter((doc) => doc.type === 'invoice');
+    // Migrasi satu kali: semua invoice lama yang info usahanya masih
     // kosong ikut dilengkapi (aplikasi pribadi satu usaha, jadi datanya sama).
     // Dokumen yang sudah punya data sendiri tidak ditimpa.
     if (!settings.documentsBusinessSeeded) {
@@ -146,22 +147,14 @@ export function deleteDocument(docId: string): AppState {
   return newState;
 }
 
-export function getNextDocumentNumber(type: 'invoice' | 'kwitansi'): string {
+export function getNextDocumentNumber(): string {
   const state = loadState();
-  if (type === 'invoice') {
-    return generateDocumentNumber('invoice', state.settings.nextInvoiceNumber);
-  }
-  return generateDocumentNumber('kwitansi', state.settings.nextKwitansiNumber);
+  return generateDocumentNumber(state.settings.nextInvoiceNumber);
 }
 
-export function incrementDocumentNumber(type: 'invoice' | 'kwitansi'): AppState {
+export function incrementDocumentNumber(): AppState {
   const state = loadState();
-  const settings = { ...state.settings };
-  if (type === 'invoice') {
-    settings.nextInvoiceNumber += 1;
-  } else {
-    settings.nextKwitansiNumber += 1;
-  }
+  const settings = { ...state.settings, nextInvoiceNumber: state.settings.nextInvoiceNumber + 1 };
   const newState = { ...state, settings };
   saveState(newState);
   return newState;
@@ -188,7 +181,7 @@ export function importData(jsonStr: string): boolean {
       ...parsed,
       business: { ...DEFAULT_BUSINESS, ...parsed.business },
       settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
-      documents: parsed.documents,
+      documents: parsed.documents.filter((d: Document) => d.type === 'invoice'),
     };
 
     saveState(state);

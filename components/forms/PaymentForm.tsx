@@ -8,12 +8,10 @@ interface PaymentFormProps {
   payment: Payment;
   totalAmount: number;
   onChange: (payment: Partial<Payment>) => void;
-  documentType: string;
   errors: Record<string, string>;
 }
 
-export default function PaymentForm({ payment, totalAmount, onChange, documentType, errors }: PaymentFormProps) {
-  if (documentType !== 'invoice') return null;
+export default function PaymentForm({ payment, totalAmount, onChange, errors }: PaymentFormProps) {
 
   const handleMethodChange = (method: 'full' | 'dp') => {
     if (method === 'full') {

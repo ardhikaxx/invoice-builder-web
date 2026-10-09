@@ -11,7 +11,6 @@ import AdditionalCostForm from '@/components/forms/AdditionalCostForm';
 import DiscountForm from '@/components/forms/DiscountForm';
 import PaymentForm from '@/components/forms/PaymentForm';
 import InvoicePreview from '@/components/preview/InvoicePreview';
-import KwitansiPreview from '@/components/preview/KwitansiPreview';
 import Button from '@/components/ui/Button';
 import { downloadDocumentPdf } from '@/lib/exportPdf';
 import { Save, Printer, ArrowLeft, RotateCcw, StickyNote, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
@@ -30,7 +29,6 @@ interface BuilderProps {
   onUpdateDiscount: (discount: Discount) => void;
   onUpdatePayment: (payment: Partial<Payment>) => void;
   onUpdateNotes: (notes: string) => void;
-  onUpdatePelunasanAmount: (amount: number) => void;
   onSave: () => { success: boolean; message: string };
   onReset: () => void;
   onBack: () => void;
@@ -51,7 +49,6 @@ export default function Builder({
   onUpdateDiscount,
   onUpdatePayment,
   onUpdateNotes,
-  onUpdatePelunasanAmount,
   onSave,
   onReset,
   onBack,
@@ -104,7 +101,7 @@ export default function Builder({
             </button>
             <div className="min-w-0">
               <h1 className="text-sm font-semibold text-black truncate">
-                {currentDocument.type === 'invoice' ? 'Invoice Builder' : 'Kwitansi Builder'}
+                Invoice Builder
               </h1>
               <p className="text-xs text-zinc-500 truncate">{currentDocument.documentNumber}</p>
             </div>
@@ -156,7 +153,6 @@ export default function Builder({
               <div className="border-t border-zinc-200" />
 
               <DocumentInfoForm
-                type={currentDocument.type}
                 documentNumber={currentDocument.documentNumber}
                 date={currentDocument.date}
                 onChange={onUpdateDocumentInfo}
@@ -164,8 +160,7 @@ export default function Builder({
               />
             </div>
 
-            {currentDocument.type === 'invoice' && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-6">
+            <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-6">
                 <ServiceItemsForm
                   items={currentDocument.items}
                   onAddItem={onAddItem}
@@ -220,62 +215,23 @@ export default function Builder({
                   payment={currentDocument.payment}
                   totalAmount={totalAmount}
                   onChange={onUpdatePayment}
-                  documentType={currentDocument.type}
                   errors={errors}
                 />
               </div>
-            )}
 
-            {currentDocument.type === 'kwitansi' && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <StickyNote className="w-4 h-4 text-zinc-500" />
-                  <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wide">Detail Kwitansi</h3>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-zinc-600 mb-1">Nominal Pembayaran (Rp) *</label>
-                  <input
-                    type="number"
-                    value={currentDocument.pelunasanAmount || ''}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
-                      onUpdatePelunasanAmount(val);
-                      onUpdatePayment({ dpAmount: val, paidAmount: val, remainingPayment: Math.max(0, currentDocument.totalAmount - val) });
-                    }}
-                    className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-zinc-600 mb-1">Keterangan Pembayaran</label>
-                  <textarea
-                    value={currentDocument.notes}
-                    onChange={(e) => onUpdateNotes(e.target.value)}
-                    placeholder="Contoh: Pembayaran telah diterima untuk pembuatan website"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none"
-                  />
-                </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  QR QRIS dengan nominal otomatis akan tampil di preview dokumen & PDF.
-                </p>
+            <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <StickyNote className="w-4 h-4 text-zinc-500" />
+                <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wide">Catatan (Opsional)</h3>
               </div>
-            )}
-
-            {currentDocument.type === 'invoice' && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <StickyNote className="w-4 h-4 text-zinc-500" />
-                  <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wide">Catatan (Opsional)</h3>
-                </div>
-                <textarea
-                  value={currentDocument.notes}
-                  onChange={(e) => onUpdateNotes(e.target.value)}
-                  placeholder="Informasi pembayaran, syarat, atau catatan lainnya..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none"
-                />
-              </div>
-            )}
+              <textarea
+                value={currentDocument.notes}
+                onChange={(e) => onUpdateNotes(e.target.value)}
+                placeholder="Informasi pembayaran, syarat, atau catatan lainnya..."
+                rows={3}
+                className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none"
+              />
+            </div>
           </div>
 
           <div className="flex-1 min-w-0" id="print-area">
@@ -306,11 +262,7 @@ export default function Builder({
                 </div>
                 <div className="flex justify-center preview-scale-wrapper">
                   <div ref={previewRef} className="preview-zoom-wrapper" style={{ zoom } as React.CSSProperties}>
-                    {currentDocument.type === 'invoice' ? (
-                      <InvoicePreview document={currentDocument} />
-                    ) : (
-                      <KwitansiPreview document={currentDocument} />
-                    )}
+                    <InvoicePreview document={currentDocument} />
                   </div>
                 </div>
               </div>

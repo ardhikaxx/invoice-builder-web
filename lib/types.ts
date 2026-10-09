@@ -45,7 +45,7 @@ export interface Payment {
 
 export type PaymentStatus = 'lunas' | 'lunas_dp' | 'pelunasan';
 
-export type DocumentType = 'invoice' | 'kwitansi';
+export type DocumentType = 'invoice';
 
 export interface Document {
   id: string;
@@ -63,8 +63,6 @@ export interface Document {
   notes: string;
   createdAt: string;
   updatedAt: string;
-  linkedInvoiceId?: string;
-  pelunasanAmount?: number;
 }
 
 export interface DocumentHistoryItem {
@@ -87,7 +85,6 @@ export interface AppState {
 
 export interface AppSettings {
   nextInvoiceNumber: number;
-  nextKwitansiNumber: number;
   businessSeeded?: boolean;
   documentsBusinessSeeded?: boolean;
 }

@@ -8,7 +8,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ToastContainer from '@/components/ui/Toast';
 import Button from '@/components/ui/Button';
 import { ConfirmationModal } from '@/components/ui/Modal';
-import { FileText, Receipt, Download, Upload, Trash2, FileJson } from 'lucide-react';
+import { FileText, Download, Upload, Trash2, FileJson } from 'lucide-react';
 import { exportData, importData, saveState as saveAppState } from '@/lib/storage';
 
 export default function Home() {
@@ -29,7 +29,6 @@ export default function Home() {
     updateDiscount,
     updatePayment,
     updateNotes,
-    updatePelunasanAmount,
     saveCurrentDocument,
     deleteDocument,
     resetForm,
@@ -108,7 +107,6 @@ export default function Home() {
           onUpdateDiscount={updateDiscount}
           onUpdatePayment={updatePayment}
           onUpdateNotes={updateNotes}
-          onUpdatePelunasanAmount={updatePelunasanAmount}
           onSave={saveCurrentDocument}
           onReset={resetForm}
           onBack={resetForm}
@@ -128,8 +126,8 @@ export default function Home() {
       <div className="bg-white border-b border-zinc-200">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <h1 className="text-lg font-bold text-black tracking-tight truncate">Invoice & Kwitansi Builder</h1>
-            <p className="text-xs text-zinc-500 truncate">Buat invoice dan kwitansi profesional tanpa login</p>
+            <h1 className="text-lg font-bold text-black tracking-tight truncate">Invoice Builder</h1>
+            <p className="text-xs text-zinc-500 truncate">Buat invoice profesional tanpa login</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="ghost" size="sm" onClick={handleExport} icon={<Download className="w-3.5 h-3.5" />}>
@@ -145,17 +143,13 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {state.documents.length === 0 ? (
           <EmptyState
-            onInvoice={() => startNewDocument('invoice')}
-            onKwitansi={() => startNewDocument('kwitansi')}
+            onInvoice={() => startNewDocument()}
           />
         ) : (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button onClick={() => startNewDocument('invoice')} icon={<FileText className="w-4 h-4" />}>
+              <Button onClick={() => startNewDocument()} icon={<FileText className="w-4 h-4" />}>
                 Buat Invoice Baru
-              </Button>
-              <Button variant="secondary" onClick={() => startNewDocument('kwitansi')} icon={<Receipt className="w-4 h-4" />}>
-                Buat Kwitansi Baru
               </Button>
             </div>
 
