@@ -1,50 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Invoice Builder (Aplikasi Desktop)
 
-## Getting Started
+Aplikasi desktop **Invoice Builder** untuk usaha jasa pembuatan website — buat invoice profesional dengan preview A4, unduh langsung sebagai PDF (nama file mengikuti nomor invoice), bayar via QRIS dinamis bernominal otomatis, dan riwayat dokumen tersimpan lokal.
 
-First, run the development server:
+## Fitur
+
+- Builder invoice: data usaha, pelanggan, rincian jasa, biaya tambahan, diskon, DP / full, catatan
+- Status pembayaran: Lunas, Lunas Pembayaran DP, Lunas Pelunasan
+- Preview A4 + unduh PDF langsung (tanpa dialog print)
+- QRIS dinamis: nominal full / DP tertanam di QR, tinggal scan
+- Riwayat dokumen: cari, filter status, gandakan, hapus, export/import JSON
+- Data usaha tersimpan otomatis (nama, kontak, alamat, website portofolio)
+
+## Menjalankan
+
+Versi web (browser, penyimpanan `localStorage`):
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Aplikasi Desktop (Windows)
-
-Proyek ini bisa dibungkus menjadi aplikasi desktop dengan penyimpanan SQLite:
+Versi desktop (Electron, penyimpanan SQLite):
 
 ```bash
-npm run desktop   # jalankan versi desktop (Next.js + Electron)
-npm run dist      # build installer Windows (.exe) ke folder dist/
+npm run desktop
 ```
 
-- Installer (`Invoice Builder Setup 1.0.0.exe`, NSIS per-user tanpa admin) memakai ikon `public/logo-invoice.png`.
-- Database SQLite (`invoice-builder.db`) otomatis dibuat di folder data aplikasi
-  (`%APPDATA%/Invoice Builder/`) saat pertama dibuka — langsung siap dipakai.
-- Di browser biasa aplikasi tetap berjalan dengan `localStorage` sebagai fallback.
+Buka aplikasi desktop yang muncul — data tersimpan di database SQLite
+(`invoice-builder.db`) yang otomatis dibuat di folder data aplikasi, jadi
+langsung siap dipakai tanpa setup tambahan.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build Installer Windows (.exe)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dist
+```
 
-## Learn More
+Hasilnya ada di folder `dist/`, contoh: `Invoice Builder Setup 1.0.0.exe`.
+Installer NSIS per-user (tanpa perlu admin), membuat shortcut Desktop dan
+Start Menu dengan ikon aplikasi. Catatan: karena belum ditandatangani,
+Windows SmartScreen dapat menampilkan peringatan saat install (normal untuk
+aplikasi distribusi sendiri).
 
-To learn more about Next.js, take a look at the following resources:
+## Teknologi
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js + React + Tailwind CSS · Electron · SQLite (`better-sqlite3`) ·
+jsPDF · QRIS dinamis (EMVCo + CRC16)
