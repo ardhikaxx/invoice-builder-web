@@ -21,12 +21,12 @@ export default function ServiceItemsForm({ items, onAddItem, onUpdateItem, onRem
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-zinc-500" />
+          <Layers className="w-4 h-4 shrink-0 text-zinc-500" />
           <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wide">Rincian Jasa / Pekerjaan</h3>
         </div>
-        <Button variant="secondary" size="sm" onClick={onAddItem} icon={<Plus className="w-3.5 h-3.5" />}>
+        <Button variant="secondary" size="sm" onClick={onAddItem} icon={<Plus className="w-3.5 h-3.5" />} className="w-full sm:w-auto">
           Tambah Jasa
         </Button>
       </div>

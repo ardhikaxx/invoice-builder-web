@@ -126,17 +126,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="bg-white border-b border-zinc-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-black tracking-tight">Invoice & Kwitansi Builder</h1>
-            <p className="text-xs text-zinc-500">Buat invoice dan kwitansi profesional tanpa login</p>
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-lg font-bold text-black tracking-tight truncate">Invoice & Kwitansi Builder</h1>
+            <p className="text-xs text-zinc-500 truncate">Buat invoice dan kwitansi profesional tanpa login</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button variant="ghost" size="sm" onClick={handleExport} icon={<Download className="w-3.5 h-3.5" />}>
-              Export
+              <span className="hidden sm:inline">Export</span>
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setShowImportModal(true)} icon={<Upload className="w-3.5 h-3.5" />}>
-              Import
+              <span className="hidden sm:inline">Import</span>
             </Button>
           </div>
         </div>
@@ -184,7 +184,7 @@ export default function Home() {
 
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-black mb-2">Import Data</h3>
             <p className="text-sm text-zinc-500 mb-4">Pilih file JSON backup atau tempelkan data langsung.</p>
             <div className="space-y-4">

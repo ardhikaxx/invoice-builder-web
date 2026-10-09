@@ -13,7 +13,8 @@ import PaymentForm from '@/components/forms/PaymentForm';
 import InvoicePreview from '@/components/preview/InvoicePreview';
 import KwitansiPreview from '@/components/preview/KwitansiPreview';
 import Button from '@/components/ui/Button';
-import { Save, Printer, ArrowLeft, RotateCcw, StickyNote, ZoomIn, ZoomOut } from 'lucide-react';
+import { downloadDocumentPdf } from '@/lib/exportPdf';
+import { Save, Printer, ArrowLeft, RotateCcw, StickyNote, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
 
 interface BuilderProps {
   currentDocument: Document;
@@ -58,6 +59,7 @@ export default function Builder({
 }: BuilderProps) {
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [isDownloading, setIsDownloading] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const handleSave = () => {
@@ -69,8 +71,19 @@ export default function Builder({
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    try {
+      // Langsung unduh sebagai PDF, nama file = nomor dokumen (mis. INV-...-.pdf)
+      const fileName = await downloadDocumentPdf(currentDocument);
+      showToast(`Berhasil mengunduh ${fileName}`, 'success');
+    } catch (err) {
+      console.error('Gagal mengunduh PDF:', err);
+      showToast('Gagal mengunduh PDF. Coba lagi.', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const subtotal = calculateSubtotal(currentDocument.items);
@@ -81,45 +94,46 @@ export default function Builder({
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="bg-white border-b border-zinc-200 px-4 py-3 no-print">
-        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={onBack}
-              className="p-2 text-zinc-500 hover:text-black hover:bg-zinc-100 rounded-lg transition-colors"
+              className="p-2 shrink-0 text-zinc-500 hover:text-black hover:bg-zinc-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <div>
-              <h1 className="text-sm font-semibold text-black">
+            <div className="min-w-0">
+              <h1 className="text-sm font-semibold text-black truncate">
                 {currentDocument.type === 'invoice' ? 'Invoice Builder' : 'Kwitansi Builder'}
               </h1>
-              <p className="text-xs text-zinc-500">{currentDocument.documentNumber}</p>
+              <p className="text-xs text-zinc-500 truncate">{currentDocument.documentNumber}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowConfirmReset(true)}
               icon={<RotateCcw className="w-3.5 h-3.5" />}
             >
-              Reset
+              <span className="hidden sm:inline">Reset</span>
             </Button>
             <Button
               variant="secondary"
               size="sm"
               onClick={handlePrint}
-              icon={<Printer className="w-3.5 h-3.5" />}
+              disabled={isDownloading}
+              icon={isDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
             >
-              Print
+              <span className="hidden sm:inline">{isDownloading ? 'Mengunduh...' : 'Print'}</span>
             </Button>
             <Button
               size="sm"
               onClick={handleSave}
               icon={<Save className="w-3.5 h-3.5" />}
             >
-              Simpan
+              <span className="hidden sm:inline">Simpan</span>
             </Button>
           </div>
         </div>
@@ -128,7 +142,7 @@ export default function Builder({
       <div className="max-w-[1800px] mx-auto p-4">
         <div className="flex flex-col xl:flex-row gap-6">
           <div className="w-full xl:w-[520px] shrink-0 space-y-6 no-print">
-            <div className="bg-white rounded-xl border border-zinc-200 p-6 space-y-6">
+            <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-6">
               <BusinessForm business={business} onChange={onUpdateBusiness} />
 
               <div className="border-t border-zinc-200" />
@@ -151,7 +165,7 @@ export default function Builder({
             </div>
 
             {currentDocument.type === 'invoice' && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-6 space-y-6">
+              <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-6">
                 <ServiceItemsForm
                   items={currentDocument.items}
                   onAddItem={onAddItem}
@@ -213,7 +227,7 @@ export default function Builder({
             )}
 
             {currentDocument.type === 'kwitansi' && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-4">
                 <div className="flex items-center gap-2">
                   <StickyNote className="w-4 h-4 text-zinc-500" />
                   <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wide">Detail Kwitansi</h3>
@@ -241,11 +255,14 @@ export default function Builder({
                     className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none"
                   />
                 </div>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  QR QRIS dengan nominal otomatis akan tampil di preview dokumen & PDF.
+                </p>
               </div>
             )}
 
             {currentDocument.type === 'invoice' && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-zinc-200 p-4 sm:p-6 space-y-4">
                 <div className="flex items-center gap-2">
                   <StickyNote className="w-4 h-4 text-zinc-500" />
                   <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wide">Catatan (Opsional)</h3>
@@ -304,7 +321,7 @@ export default function Builder({
 
       {showConfirmReset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-black mb-2">Reset Form</h3>
             <p className="text-sm text-zinc-600 mb-6">Seluruh data yang belum disimpan akan hilang. Apakah Anda yakin?</p>
             <div className="flex gap-3 justify-end">

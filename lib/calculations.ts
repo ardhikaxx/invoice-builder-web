@@ -35,7 +35,8 @@ export function calculatePayment(
   paymentMethod: 'full' | 'dp',
   dpType: 'nominal' | 'percentage',
   dpNominal: number,
-  dpPercentage: number
+  dpPercentage: number,
+  keepStatus?: PaymentStatus,
 ): Payment {
   if (paymentMethod === 'full') {
     return {
@@ -65,7 +66,14 @@ export function calculatePayment(
   }
 
   const remainingPayment = Math.max(0, totalAmount - dpAmount);
-  const status: PaymentStatus = remainingPayment === 0 ? 'lunas' : 'lunas_dp';
+  // Pertahankan pilihan status manual user (lunas_dp / pelunasan).
+  // Hanya paksa 'lunas' jika DP sudah menutup seluruh total.
+  const status: PaymentStatus =
+    remainingPayment === 0
+      ? 'lunas'
+      : keepStatus === 'pelunasan' || keepStatus === 'lunas_dp'
+        ? keepStatus
+        : 'lunas_dp';
 
   return {
     method: 'dp',

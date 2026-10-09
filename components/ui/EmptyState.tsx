@@ -17,17 +17,17 @@ export default function EmptyState({ onInvoice, onKwitansi }: EmptyStateProps) {
       <p className="text-zinc-500 text-sm max-w-md mb-8">
         Mulai buat invoice atau kwitansi profesional untuk usaha Anda. Semua proses dilakukan langsung di browser Anda.
       </p>
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
         <button
           onClick={onInvoice}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-zinc-800 transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-zinc-800 transition-colors w-full sm:w-auto"
         >
           <FileText className="w-4 h-4" />
           Buat Invoice
         </button>
         <button
           onClick={onKwitansi}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors w-full sm:w-auto"
         >
           <Receipt className="w-4 h-4" />
           Buat Kwitansi

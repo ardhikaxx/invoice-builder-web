@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Document, Business, ServiceItem, AdditionalCost, Discount, Payment, DocumentType, AppState } from '@/lib/types';
 import { generateId, getTodayDate } from '@/lib/utils';
 import { calculateItemTotal, calculateSubtotal, calculateAdditionalCostsTotal, calculateDiscountAmount, calculateTotalAmount, calculatePayment } from '@/lib/calculations';
-import { loadState, saveState, saveDocument as saveDocumentToStorage, deleteDocument as deleteDocumentFromStorage, incrementDocumentNumber, getNextDocumentNumber } from '@/lib/storage';
+import { loadState, saveState, saveDocument as saveDocumentToStorage, deleteDocument as deleteDocumentFromStorage, incrementDocumentNumber, getNextDocumentNumber, getDefaultState } from '@/lib/storage';
 
 function createEmptyDocument(type: DocumentType): Document {
   return {
@@ -47,13 +47,20 @@ function createEmptyItem(): ServiceItem {
 }
 
 export function useDocumentState() {
-  const [state, setState] = useState<AppState>(() => loadState());
+  const [state, setState] = useState<AppState>(() => getDefaultState());
   const [currentDocument, setCurrentDocument] = useState<Document | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    setState(loadState());
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
     saveState(state);
-  }, [state]);
+  }, [state, isLoaded]);
 
   const startNewDocument = useCallback((type: DocumentType) => {
     const doc = createEmptyDocument(type);
@@ -212,7 +219,8 @@ export function useDocumentState() {
         'dp',
         doc.payment.dpType,
         doc.payment.dpNominal,
-        doc.payment.dpPercentage
+        doc.payment.dpPercentage,
+        doc.payment.status,
       );
     }
   }
@@ -316,6 +324,7 @@ export function useDocumentState() {
     state,
     currentDocument,
     errors,
+    isLoaded,
     startNewDocument,
     loadDocument,
     duplicateDocument,

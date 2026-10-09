@@ -4,11 +4,11 @@ import { generateDocumentNumber } from './utils';
 const STORAGE_KEY = 'invoice-builder-data';
 
 const DEFAULT_BUSINESS: Business = {
-  name: '',
-  phone: '',
-  email: '',
-  address: '',
-  website: '',
+  name: 'Yanuar Ardhika',
+  phone: '085933648537',
+  email: 'ardhikayanuar58@gmail.com',
+  address: 'Bondowoso, Jawa Timur',
+  website: 'https://yanuar-ardhika.vercel.app/',
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -16,12 +16,30 @@ const DEFAULT_SETTINGS: AppSettings = {
   nextKwitansiNumber: 1,
 };
 
-const DEFAULT_STATE: AppState = {
+export const DEFAULT_STATE: AppState = {
   business: DEFAULT_BUSINESS,
   documents: [],
   draftDocument: null,
   settings: DEFAULT_SETTINGS,
 };
+
+export function getDefaultState(): AppState {
+  return {
+    business: { ...DEFAULT_BUSINESS },
+    documents: [],
+    draftDocument: null,
+    settings: { ...DEFAULT_SETTINGS },
+  };
+}
+
+/** Isi kolom usaha yang masih kosong dengan data default. Kolom terisi tidak disentuh. */
+function fillEmptyBusinessFields(business: Business): void {
+  (Object.keys(DEFAULT_BUSINESS) as (keyof Business)[]).forEach((key) => {
+    if (!business[key]?.trim() && DEFAULT_BUSINESS[key]) {
+      business[key] = DEFAULT_BUSINESS[key];
+    }
+  });
+}
 
 function safeGetStorage(): string | null {
   if (typeof window === 'undefined') return null;
@@ -52,19 +70,40 @@ function safeRemoveStorage(): void {
 
 export function loadState(): AppState {
   const raw = safeGetStorage();
-  if (!raw) return DEFAULT_STATE;
+  if (!raw) return getDefaultState();
 
   try {
     const parsed = JSON.parse(raw);
+    const business: Business = { ...DEFAULT_BUSINESS, ...parsed.business };
+    const settings: AppSettings = { ...DEFAULT_SETTINGS, ...parsed.settings };
+    // Migrasi satu kali: isi data usaha default untuk kolom yang masih kosong.
+    // Kolom yang sudah terisi tidak ditimpa, dan flag businessSeeded
+    // memastikan user tetap bisa mengosongkannya lagi nanti.
+    if (!settings.businessSeeded) {
+      fillEmptyBusinessFields(business);
+      settings.businessSeeded = true;
+    }
+    let documents: Document[] = Array.isArray(parsed.documents) ? parsed.documents : [];
+    // Migrasi satu kali: semua invoice/kwitansi lama yang info usahanya masih
+    // kosong ikut dilengkapi (aplikasi pribadi satu usaha, jadi datanya sama).
+    // Dokumen yang sudah punya data sendiri tidak ditimpa.
+    if (!settings.documentsBusinessSeeded) {
+      documents = documents.map((doc) => {
+        const businessOfDoc: Business = { ...DEFAULT_BUSINESS, ...doc.business };
+        fillEmptyBusinessFields(businessOfDoc);
+        return { ...doc, business: businessOfDoc };
+      });
+      settings.documentsBusinessSeeded = true;
+    }
     return {
-      ...DEFAULT_STATE,
+      ...getDefaultState(),
       ...parsed,
-      business: { ...DEFAULT_BUSINESS, ...parsed.business },
-      settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
-      documents: Array.isArray(parsed.documents) ? parsed.documents : [],
+      business,
+      settings,
+      documents,
     };
   } catch {
-    return DEFAULT_STATE;
+    return getDefaultState();
   }
 }
 

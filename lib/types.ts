@@ -88,6 +88,8 @@ export interface AppState {
 export interface AppSettings {
   nextInvoiceNumber: number;
   nextKwitansiNumber: number;
+  businessSeeded?: boolean;
+  documentsBusinessSeeded?: boolean;
 }
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';

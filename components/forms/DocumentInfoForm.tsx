@@ -22,8 +22,8 @@ export default function DocumentInfoForm({ type, documentNumber, date, onChange,
         <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wide">Informasi Dokumen</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
+      <div className="grid grid-cols-1 gap-4">
+        <div className="min-w-0">
           <label className="block text-xs font-medium text-zinc-600 mb-1">Nomor {type === 'invoice' ? 'Invoice' : 'Kwitansi'} *</label>
           <div className="flex gap-2">
             <input
@@ -31,7 +31,7 @@ export default function DocumentInfoForm({ type, documentNumber, date, onChange,
               value={documentNumber}
               onChange={(e) => onChange({ documentNumber: e.target.value })}
               placeholder={type === 'invoice' ? 'INV-20260918-001' : 'KWT-20260918-001'}
-              className={`flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 transition-colors ${
+              className={`min-w-0 flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 transition-colors ${
                 errors['documentNumber'] ? 'border-red-400' : 'border-zinc-300'
               }`}
             />
@@ -40,6 +40,7 @@ export default function DocumentInfoForm({ type, documentNumber, date, onChange,
               size="sm"
               onClick={() => onChange({ documentNumber: getNextDocumentNumber(type) })}
               icon={<RefreshCw className="w-3.5 h-3.5" />}
+              className="shrink-0 whitespace-nowrap self-center"
             >
               Generate
             </Button>

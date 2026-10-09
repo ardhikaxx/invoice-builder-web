@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Payment } from '@/lib/types';
+import { Payment, PaymentStatus } from '@/lib/types';
 import { formatRupiah, getPaymentStatusLabel } from '@/lib/utils';
 import { CreditCard } from 'lucide-react';
 
@@ -42,6 +42,16 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
     }
   };
 
+  const resolveDpStatus = (dpAmount: number, current: PaymentStatus): PaymentStatus => {
+    if (dpAmount >= totalAmount) return 'lunas';
+    if (current === 'pelunasan') return 'pelunasan';
+    return 'lunas_dp';
+  };
+
+  const handleStatusChange = (status: PaymentStatus) => {
+    onChange({ status });
+  };
+
   const handleDpTypeChange = (dpType: 'nominal' | 'percentage') => {
     if (dpType === 'percentage') {
       const pct = payment.dpPercentage > 0 ? payment.dpPercentage : 30;
@@ -53,7 +63,7 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
         dpAmount,
         remainingPayment: Math.max(0, totalAmount - dpAmount),
         paidAmount: dpAmount,
-        status: dpAmount >= totalAmount ? 'lunas' : 'lunas_dp',
+        status: resolveDpStatus(dpAmount, payment.status),
       });
     } else {
       const nom = payment.dpNominal > 0 ? Math.min(payment.dpNominal, totalAmount) : 0;
@@ -64,7 +74,7 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
         dpAmount: nom,
         remainingPayment: Math.max(0, totalAmount - nom),
         paidAmount: nom,
-        status: nom >= totalAmount ? 'lunas' : 'lunas_dp',
+        status: resolveDpStatus(nom, payment.status),
       });
     }
   };
@@ -79,7 +89,7 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
         dpAmount,
         remainingPayment: Math.max(0, totalAmount - dpAmount),
         paidAmount: dpAmount,
-        status: dpAmount >= totalAmount ? 'lunas' : 'lunas_dp',
+        status: resolveDpStatus(dpAmount, payment.status),
       });
     } else {
       const nom = Math.min(Math.max(value, 0), totalAmount);
@@ -89,10 +99,12 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
         dpAmount: nom,
         remainingPayment: Math.max(0, totalAmount - nom),
         paidAmount: nom,
-        status: nom >= totalAmount ? 'lunas' : 'lunas_dp',
+        status: resolveDpStatus(nom, payment.status),
       });
     }
   };
+
+  const dpDisplayValue = payment.dpType === 'percentage' ? payment.dpPercentage : payment.dpNominal;
 
   return (
     <div className="space-y-4">
@@ -155,11 +167,18 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
             </label>
             <div className="relative">
               <input
-                type="number"
-                value={payment.dpType === 'percentage' ? payment.dpPercentage : payment.dpNominal}
-                onChange={(e) => handleDpValueChange(parseFloat(e.target.value) || 0)}
-                min={0}
-                max={payment.dpType === 'percentage' ? 100 : totalAmount}
+                type="text"
+                inputMode="numeric"
+                value={dpDisplayValue === 0 ? '' : dpDisplayValue}
+                placeholder="0"
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^0-9]/g, '');
+                  if (digits === '') {
+                    handleDpValueChange(0);
+                    return;
+                  }
+                  handleDpValueChange(parseInt(digits, 10));
+                }}
                 className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 transition-colors ${
                   errors['payment.dp'] ? 'border-red-400' : 'border-zinc-300'
                 }`}
@@ -183,6 +202,34 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
               <span className="font-semibold text-zinc-800">{formatRupiah(payment.remainingPayment)}</span>
             </div>
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-zinc-600 mb-1">
+              Status Pembayaran *
+            </label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleStatusChange('lunas_dp')}
+                className={`flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
+                  payment.status === 'lunas_dp'
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-zinc-600 border-zinc-300 hover:bg-zinc-50'
+                }`}
+              >
+                Lunas Pembayaran DP
+              </button>
+              <button
+                onClick={() => handleStatusChange('pelunasan')}
+                className={`flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
+                  payment.status === 'pelunasan'
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-zinc-600 border-zinc-300 hover:bg-zinc-50'
+                }`}
+              >
+                Lunas Pelunasan
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -192,6 +239,10 @@ export default function PaymentForm({ payment, totalAmount, onChange, documentTy
           {getPaymentStatusLabel(payment.status)}
         </span>
       </div>
+
+      <p className="text-[11px] text-zinc-400 leading-relaxed">
+        QR QRIS dengan nominal otomatis akan tampil di preview dokumen & PDF.
+      </p>
     </div>
   );
 }

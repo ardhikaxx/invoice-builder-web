@@ -3,6 +3,7 @@ import React from 'react';
 import { Document } from '@/lib/types';
 import { formatRupiah, formatDateIndonesia, getPaymentStatusLabel } from '@/lib/utils';
 import { terbilang } from '@/lib/terbilang';
+import QrisBox from '@/components/preview/QrisBox';
 
 interface KwitansiPreviewProps {
   document: Document;
@@ -85,6 +86,8 @@ export default function KwitansiPreview({ document }: KwitansiPreviewProps) {
         <span className="text-zinc-500">Status Pembayaran:</span>
         <span className="font-bold text-black uppercase tracking-wide">{getPaymentStatusLabel(payment.status)}</span>
       </div>
+
+      <QrisBox amount={displayAmount} />
 
       {notes && (
         <div className="p-4 bg-zinc-50 border border-zinc-200 rounded text-xs mb-8">

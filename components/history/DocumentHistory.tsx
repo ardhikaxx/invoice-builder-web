@@ -80,7 +80,7 @@ export default function DocumentHistory({ documents, onLoad, onDuplicate, onDele
       ) : (
         <div className="border border-zinc-200 rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="w-full min-w-[620px] text-xs">
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200">
                   <th className="text-left px-4 py-3 font-semibold text-zinc-600">Nomor</th>

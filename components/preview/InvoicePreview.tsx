@@ -3,6 +3,7 @@ import React from 'react';
 import { Document } from '@/lib/types';
 import { formatRupiah, formatDateIndonesia, getPaymentStatusLabel } from '@/lib/utils';
 import { terbilang } from '@/lib/terbilang';
+import QrisBox from '@/components/preview/QrisBox';
 
 interface InvoicePreviewProps {
   document: Document;
@@ -123,6 +124,8 @@ export default function InvoicePreview({ document }: InvoicePreviewProps) {
         )}
         <p className="text-zinc-500 italic">Terbilang: {terbilang(payment.dpAmount)}</p>
       </div>
+
+      <QrisBox amount={payment.method === 'full' ? totalAmount : payment.dpAmount} />
 
       {notes && (
         <div className="mt-6 p-4 bg-zinc-50 border border-zinc-200 rounded text-xs">
