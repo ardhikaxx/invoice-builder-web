@@ -3,6 +3,30 @@ import { generateDocumentNumber } from './utils';
 
 const STORAGE_KEY = 'invoice-builder-data';
 
+/** API penyimpanan yang disediakan aplikasi desktop (SQLite) via preload. */
+interface DesktopStore {
+  isDesktop: boolean;
+  getItem: (key: string) => string | null;
+  setItem: (key: string, value: string) => void;
+  removeItem: (key: string) => void;
+}
+
+declare global {
+  interface Window {
+    invoiceDB?: DesktopStore | null;
+  }
+}
+
+/** Di aplikasi desktop pakai SQLite; di browser fallback ke localStorage. */
+function getDesktopStore(): DesktopStore | null {
+  try {
+    if (typeof window !== 'undefined' && window.invoiceDB) return window.invoiceDB;
+  } catch {
+    // abaikan
+  }
+  return null;
+}
+
 const DEFAULT_BUSINESS: Business = {
   name: 'Yanuar Ardhika',
   phone: '085933648537',
@@ -41,6 +65,14 @@ function fillEmptyBusinessFields(business: Business): void {
 }
 
 function safeGetStorage(): string | null {
+  const desktop = getDesktopStore();
+  if (desktop) {
+    try {
+      return desktop.getItem(STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  }
   if (typeof window === 'undefined') return null;
   try {
     return localStorage.getItem(STORAGE_KEY);
@@ -50,6 +82,15 @@ function safeGetStorage(): string | null {
 }
 
 function safeSetStorage(data: string): void {
+  const desktop = getDesktopStore();
+  if (desktop) {
+    try {
+      desktop.setItem(STORAGE_KEY, data);
+    } catch {
+      // abaikan: data tetap di memori sesi ini
+    }
+    return;
+  }
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, data);
@@ -59,6 +100,15 @@ function safeSetStorage(data: string): void {
 }
 
 function safeRemoveStorage(): void {
+  const desktop = getDesktopStore();
+  if (desktop) {
+    try {
+      desktop.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    return;
+  }
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem(STORAGE_KEY);
